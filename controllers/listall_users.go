@@ -1,5 +1,3 @@
-// listall_users.go
-
 package controllers
 
 import (

@@ -7,5 +7,5 @@ import (
 
 func usersRouter(r *gin.RouterGroup) {
 	r.GET("/list-all", controllers.ListAllUsers)
-	// r.POST("/detail", controllers.DetailUsers )
+	r.GET("/detail/:id", controllers.DetailUser)
 }
