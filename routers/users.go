@@ -8,4 +8,5 @@ import (
 func usersRouter(r *gin.RouterGroup) {
 	r.GET("/list-all", controllers.ListAllUsers)
 	r.GET("/detail/:id", controllers.DetailUser)
+	r.POST("/create", controllers.CreateUser)
 }

@@ -6,13 +6,12 @@ import (
 	"strconv"
 	"github.com/jackc/pgx/v5"
 )
-
 type User struct {
-	Id         int    `db:"id" json:"id"`
-	Username   string `db:"username" json:"username"`  
-	Email      string `db:"email" json:"email"`
-	Phone      string  `db:"phone" json:"phone"`        
-	Password   string `db:"password" json:"password"`         
+	Id         int    `form:"id" db:"id" json:"id"`
+	Username   string `form:"username" db:"username" json:"username"`  
+	Email      string `form:"email" db:"email" json:"email"`
+	Phone      string  `form:"phone" db:"phone" json:"phone"`        
+	Password   string `form:"password" db:"password" json:"password"`         
 }
 
 func FindAllUsers() ([]User, error) {
@@ -22,7 +21,7 @@ func FindAllUsers() ([]User, error) {
 	}
 	defer conn.Close() 
 
-	query := `SELECT id, username, email FROM users`
+	query := `SELECT id, username, email, phone, password FROM users`
 
 	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
@@ -63,3 +62,20 @@ func GetUserDetail(param string) ([]User, error) {
 	return users, nil
 }
 
+func HandleCreateUser(user User) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	query := `INSERT INTO users (username, email, phone, password) VALUES ($1, $2, $3, md5($4))
+	`
+
+	_, err = conn.Exec(context.Background(), query, user.Username, user.Email, user.Phone, user.Password)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

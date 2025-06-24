@@ -7,6 +7,10 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL
 );
 
+INSERT INTO users (username, email, phone, password)
+VALUES 
+('budistyle', 'budi@mail.co', 08129356789, md5('maxstyle123'));
+
 DROP TABLE users;
 
 INSERT INTO users (username, email, phone, password)
