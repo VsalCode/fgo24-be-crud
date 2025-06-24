@@ -79,3 +79,22 @@ func HandleCreateUser(user User) error {
 
 	return nil
 }
+
+func HandleDeleteUser(id string) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	query := `DELETE FROM users WHERE id = $1`
+
+	idInt, _ := strconv.Atoi(id)
+
+	_, err = conn.Exec(context.Background(), query, idInt)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
