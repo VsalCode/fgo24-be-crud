@@ -2,8 +2,10 @@ package models
 
 import (
 	"context"
+	"crud-backend/dto"
 	"crud-backend/utils"
 	"strconv"
+
 	"github.com/jackc/pgx/v5"
 )
 type User struct {
@@ -62,7 +64,7 @@ func GetUserDetail(param string) ([]User, error) {
 	return users, nil
 }
 
-func HandleCreateUser(user User) error {
+func HandleCreateUser(user dto.CreateUserRequest) error {
 	conn, err := utils.DBConnect()
 	if err != nil {
 		return err

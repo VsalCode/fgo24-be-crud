@@ -1,21 +1,23 @@
 package controllers
 
 import (
+	"crud-backend/dto"
 	"crud-backend/models"
 	"crud-backend/utils"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 // @Description Create a new user with username, email, and password
 // @Tags Users
 // @Accept json
 // @Produce json
-// @Param user body models.User true "User object"
+// @Param user body dto.CreateUserRequest true "User object"
 // @Success 200 {object} utils.Response "User created successfully"
 // @Router /users/create [post]
 func CreateUser(ctx *gin.Context) {
-	user := models.User{}
+	user := dto.CreateUserRequest{}
 	ctx.ShouldBind(&user)
 
 	if user.Username == "" || user.Email == "" || user.Password == "" {

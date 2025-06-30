@@ -34,7 +34,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/dto.CreateUserRequest"
                         }
                     }
                 ],
@@ -135,14 +135,11 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.User": {
+        "dto.CreateUserRequest": {
             "type": "object",
             "properties": {
                 "email": {
                     "type": "string"
-                },
-                "id": {
-                    "type": "integer"
                 },
                 "password": {
                     "type": "string"
