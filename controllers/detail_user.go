@@ -7,6 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Description Get user details by ID
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param id path string true "User ID"
+// @Success 200 {object} utils.Response "User detail retrieved successfully"
+// @Router /users/detail/{id} [get]
 func DetailUser(ctx *gin.Context) {
 	id := ctx.Param("id")
 
