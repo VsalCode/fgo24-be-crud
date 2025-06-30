@@ -109,16 +109,30 @@ func HandleUpdateUser(id string, user dto.UpdateUserRequest) error {
 	}
 	defer conn.Close()
 
-	query := `UPDATE users SET 
-                username = COALESCE($1, username), 
-                email = COALESCE($2, email), 
-                phone = COALESCE($3, phone), 
-                password = COALESCE(md5($4), password)
-              WHERE id = $5`
+	querySelect := `SELECT username, email, phone, password FROM users WHERE id = $1`
+	row := conn.QueryRow(context.Background(), querySelect, id)
 
-	idInt, _ := strconv.Atoi(id)
+	var currentUsername, currentEmail, currentPhone, currentPassword string
+	err = row.Scan(&currentUsername, &currentEmail, &currentPhone, &currentPassword)
+	if err != nil {
+		return err
+	}
 
-	_, err = conn.Exec(context.Background(), query, user.Username, user.Email, user.Phone, user.Password, idInt)
+	_, err = conn.Exec(
+		context.Background(), 
+		`
+		UPDATE users SET 
+    username = COALESCE($1, $2), 
+    email = COALESCE($3, $4), 
+    phone = COALESCE($5, $6), 
+    password = COALESCE(md5($7), md5($8))
+    WHERE id = $9
+		`, 
+		user.Username, currentUsername,
+		user.Email, currentEmail,
+		user.Phone, currentPhone,
+		user.Password, currentPassword,
+		id)
 	if err != nil {
 		return err
 	}

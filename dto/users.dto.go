@@ -6,6 +6,7 @@ type CreateUserRequest struct {
     Phone    string `json:"phone" form:"phone"`
     Password string `json:"password" form:"password"`
 }
+
 type UpdateUserRequest struct {
     Username *string `json:"username,omitempty"`
     Email    *string `json:"email,omitempty"`
