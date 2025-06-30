@@ -6,7 +6,7 @@ import (
 )
 
 func usersRouter(r *gin.RouterGroup) {
-	r.GET("/list-all", controllers.ListAllUsers)
+	r.GET("", controllers.ListAllUsers)
 	r.GET("/:id", controllers.DetailUser)
 	r.POST("", controllers.CreateUser)
 	r.DELETE("/:id", controllers.DeleteUser)

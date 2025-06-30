@@ -39,6 +39,20 @@ info:
   version: "1.0"
 paths:
   /users:
+    get:
+      consumes:
+      - application/json
+      description: Get all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of all users
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get all users
+      tags:
+      - Users
     post:
       consumes:
       - application/json
@@ -121,21 +135,6 @@ paths:
           description: User updated successfully
           schema:
             $ref: '#/definitions/utils.Response'
-      tags:
-      - Users
-  /users/list-all:
-    get:
-      consumes:
-      - application/json
-      description: Get all users
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: List of all users
-          schema:
-            $ref: '#/definitions/utils.Response'
-      summary: Get all users
       tags:
       - Users
 swagger: "2.0"
