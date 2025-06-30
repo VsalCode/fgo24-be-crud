@@ -7,6 +7,14 @@ import (
 	"github.com/gin-gonic/gin"
 );
 
+// ListAllUsers godoc
+// @Summary      Get all users
+// @Description  Get all users
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  utils.Response  "List of all users"
+// @Router       /users/list-all [get]
 func ListAllUsers(ctx *gin.Context) {
 	users, err := models.FindAllUsers()
 

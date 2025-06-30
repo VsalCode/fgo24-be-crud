@@ -1,0 +1,34 @@
+basePath: /
+definitions:
+  utils.Response:
+    properties:
+      message:
+        type: string
+      pageInfo:
+        additionalProperties: {}
+        type: object
+      result: {}
+      success:
+        type: boolean
+    type: object
+info:
+  contact: {}
+  description: This is a CRUD API for managing users.
+  version: "1.0"
+paths:
+  /users/list-all:
+    get:
+      consumes:
+      - application/json
+      description: Get all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of all users
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get all users
+      tags:
+      - Users
+swagger: "2.0"

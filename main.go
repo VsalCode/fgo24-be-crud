@@ -7,6 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @Tittle CRUD User
+// @Version 1.0
+// @Description This is a CRUD API for managing users.
+// @BasePath /
+
 func main() {
 	db, err := utils.DBConnect()
 	if err != nil {
