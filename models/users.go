@@ -8,12 +8,13 @@ import (
 
 	"github.com/jackc/pgx/v5"
 )
+
 type User struct {
-	Id         int    `form:"id" db:"id" json:"id"`
-	Username   string `form:"username" db:"username" json:"username"`  
-	Email      string `form:"email" db:"email" json:"email"`
-	Phone      string  `form:"phone" db:"phone" json:"phone"`        
-	Password   string `form:"password" db:"password" json:"password"`         
+	Id       int    `form:"id" db:"id" json:"id"`
+	Username string `form:"username" db:"username" json:"username"`
+	Email    string `form:"email" db:"email" json:"email"`
+	Phone    string `form:"phone" db:"phone" json:"phone"`
+	Password string `form:"password" db:"password" json:"password"`
 }
 
 func FindAllUsers() ([]User, error) {
@@ -21,7 +22,7 @@ func FindAllUsers() ([]User, error) {
 	if err != nil {
 		return []User{}, err
 	}
-	defer conn.Close() 
+	defer conn.Close()
 
 	query := `SELECT id, username, email, phone, password FROM users`
 
@@ -44,7 +45,7 @@ func GetUserDetail(param string) ([]User, error) {
 	if err != nil {
 		return []User{}, err
 	}
-	defer conn.Close() 
+	defer conn.Close()
 
 	query := `SELECT id, username, email, phone, password FROM users WHERE id = $1`
 
@@ -94,6 +95,30 @@ func HandleDeleteUser(id string) error {
 	idInt, _ := strconv.Atoi(id)
 
 	_, err = conn.Exec(context.Background(), query, idInt)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func HandleUpdateUser(id string, user dto.UpdateUserRequest) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	query := `UPDATE users SET 
+                username = COALESCE($1, username), 
+                email = COALESCE($2, email), 
+                phone = COALESCE($3, phone), 
+                password = COALESCE(md5($4), password)
+              WHERE id = $5`
+
+	idInt, _ := strconv.Atoi(id)
+
+	_, err = conn.Exec(context.Background(), query, user.Username, user.Email, user.Phone, user.Password, idInt)
 	if err != nil {
 		return err
 	}

@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/users/create": {
+        "/users": {
             "post": {
                 "description": "Create a new user with username, email, and password",
                 "consumes": [
@@ -48,9 +48,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/delete/{id}": {
-            "delete": {
-                "description": "Delete a user by ID",
+        "/users/list-all": {
+            "get": {
+                "description": "Get all users",
                 "consumes": [
                     "application/json"
                 ],
@@ -60,18 +60,10 @@ const docTemplate = `{
                 "tags": [
                     "Users"
                 ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "summary": "Get all users",
                 "responses": {
                     "200": {
-                        "description": "User deleted successfully",
+                        "description": "List of all users",
                         "schema": {
                             "$ref": "#/definitions/utils.Response"
                         }
@@ -79,7 +71,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/detail/{id}": {
+        "/users/{id}": {
             "get": {
                 "description": "Get user details by ID",
                 "consumes": [
@@ -108,11 +100,9 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/users/list-all": {
-            "get": {
-                "description": "Get all users",
+            },
+            "delete": {
+                "description": "Delete a user by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -122,10 +112,56 @@ const docTemplate = `{
                 "tags": [
                     "Users"
                 ],
-                "summary": "Get all users",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "List of all users",
+                        "description": "User deleted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Update a user by ID (partial update)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "User object to be updated",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User updated successfully",
                         "schema": {
                             "$ref": "#/definitions/utils.Response"
                         }
@@ -136,6 +172,23 @@ const docTemplate = `{
     },
     "definitions": {
         "dto.CreateUserRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateUserRequest": {
             "type": "object",
             "properties": {
                 "email": {
