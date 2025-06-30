@@ -1,5 +1,18 @@
 basePath: /
 definitions:
+  models.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      phone:
+        type: string
+      username:
+        type: string
+    type: object
   utils.Response:
     properties:
       message:
@@ -16,6 +29,47 @@ info:
   description: This is a CRUD API for managing users.
   version: "1.0"
 paths:
+  /users/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with username, email, and password
+      parameters:
+      - description: User object
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User created successfully
+          schema:
+            $ref: '#/definitions/utils.Response'
+      tags:
+      - Users
+  /users/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deleted successfully
+          schema:
+            $ref: '#/definitions/utils.Response'
+      tags:
+      - Users
   /users/list-all:
     get:
       consumes:

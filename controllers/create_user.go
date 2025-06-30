@@ -7,6 +7,13 @@ import (
 	"net/http"
 )
 
+// @Description Create a new user with username, email, and password
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param user body models.User true "User object"
+// @Success 200 {object} utils.Response "User created successfully"
+// @Router /users/create [post]
 func CreateUser(ctx *gin.Context) {
 	user := models.User{}
 	ctx.ShouldBind(&user)
