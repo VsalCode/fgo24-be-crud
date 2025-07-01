@@ -1,10 +1,14 @@
 package controllers
 
 import (
+	"context"
 	"crud-backend/dto"
 	"crud-backend/models"
 	"crud-backend/utils"
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,14 +22,52 @@ import (
 // @Success      200  {object}  utils.Response  "List of all users"
 // @Router       /users [get]
 func ListAllUsers(ctx *gin.Context) {
-	users, err := models.FindAllUsers()
+	err := utils.RedisClient.Ping(context.Background()).Err()
+	noRedis := false
+	if err != nil && strings.Contains(err.Error(), "refused") {
+		noRedis = true
+	}
 
+	var users []models.User
+
+	if !noRedis {
+		result := utils.RedisClient.Exists(context.Background(), "all-users")
+		if result.Val() != 0 {
+			users := []models.User{}
+			data := utils.RedisClient.Get(context.Background(), "all-users")
+			str := data.Val()
+			json.Unmarshal([]byte(str), &users)
+			ctx.JSON(http.StatusOK, utils.Response{
+				Success: true,
+				Message: "success to show all list users from redis",
+				PageInfo: map[string]any{
+					"totalData": len(users),
+				},
+				Result: users,
+			})
+		}
+	}
+
+	users, err = models.FindAllUsers()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
 			Success: false,
 			Message: "Failed to Show List All Users!",
 		})
 		return
+	}
+
+	if !noRedis {
+		encoded, err := json.Marshal(users)
+		if err != nil {
+			fmt.Println(err)
+			ctx.JSON(http.StatusInternalServerError, utils.Response{
+				Success: false,
+				Message: "Failed to Show List All Users!",
+			})
+			return
+		}
+		utils.RedisClient.Set(context.Background(), "all-users", string(encoded), 0)
 	}
 
 	ctx.JSON(http.StatusOK, utils.Response{
@@ -36,7 +78,6 @@ func ListAllUsers(ctx *gin.Context) {
 		},
 		Result: users,
 	})
-
 }
 
 // @Description Create a new user with username, email, and password

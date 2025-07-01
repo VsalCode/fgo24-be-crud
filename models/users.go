@@ -137,5 +137,6 @@ func HandleUpdateUser(id string, user dto.UpdateUserRequest) error {
 		return err
 	}
 
+
 	return nil
 }
