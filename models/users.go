@@ -4,6 +4,7 @@ import (
 	"context"
 	"crud-backend/dto"
 	"crud-backend/utils"
+	"encoding/json"
 	"strconv"
 
 	"github.com/jackc/pgx/v5"
@@ -32,10 +33,10 @@ func FindUserByName(search string) ([]User, error) {
 		)
 	} else {
 		rows, err = conn.Query(
-    context.Background(),
-    `SELECT id, username, email, phone, password FROM users 
+			context.Background(),
+			`SELECT id, username, email, phone, password FROM users 
      WHERE username ILIKE $1`,
-    "%"+search+"%")
+			"%"+search+"%")
 	}
 	if err != nil {
 		return []User{}, err
@@ -49,30 +50,46 @@ func FindUserByName(search string) ([]User, error) {
 	return users, nil
 }
 
+func GetUserDetail(param string) (User, error) {
+    redisKey := "id:" + param
+    result := utils.RedisClient.Exists(context.Background(), redisKey)
 
-func GetUserDetail(param string) ([]User, error) {
-	conn, err := utils.DBConnect()
-	if err != nil {
-		return []User{}, err
-	}
-	defer conn.Close()
+    if result.Val() != 0 {
+        data := utils.RedisClient.Get(context.Background(), redisKey)
+        str := data.Val()
+        users := User{}
+        if err := json.Unmarshal([]byte(str), &users); err != nil {
+            return User{}, err
+        }
+        return users, nil
+    }
 
-	query := `SELECT id, username, email, phone, password FROM users WHERE id = $1`
+    conn, err := utils.DBConnect()
+    if err != nil {
+        return User{}, err
+    }
+    defer conn.Close()
 
-	id, _ := strconv.Atoi(param)
+    query := `SELECT id, username, email, phone, password FROM users WHERE id = $1`
+    id, _ := strconv.Atoi(param)
 
-	rows, err := conn.Query(context.Background(), query, id)
-	if err != nil {
-		return []User{}, err
-	}
-	defer rows.Close()
+    rows, err := conn.Query(context.Background(), query, id)
+    if err != nil {
+        return User{}, err
+    }
+    defer rows.Close()
 
-	users, err := pgx.CollectRows[User](rows, pgx.RowToStructByName)
-	if err != nil {
-		return []User{}, err
-	}
+    users, err := pgx.CollectOneRow[User](rows, pgx.RowToStructByName)
+    if err != nil {
+        return User{}, err
+    }
 
-	return users, nil
+    encoded, err := json.Marshal(users)
+    if err == nil {
+        utils.RedisClient.Set(context.Background(), redisKey, string(encoded), 0)
+    }
+
+    return users, nil
 }
 
 func HandleCreateUser(user dto.CreateUserRequest) error {
@@ -129,7 +146,7 @@ func HandleUpdateUser(id string, user dto.UpdateUserRequest) error {
 	}
 
 	_, err = conn.Exec(
-		context.Background(), 
+		context.Background(),
 		`
 		UPDATE users SET 
     username = COALESCE($1, $2), 
@@ -137,7 +154,7 @@ func HandleUpdateUser(id string, user dto.UpdateUserRequest) error {
     phone = COALESCE($5, $6), 
     password = COALESCE(md5($7), md5($8))
     WHERE id = $9
-		`, 
+		`,
 		user.Username, currentUsername,
 		user.Email, currentEmail,
 		user.Phone, currentPhone,
@@ -146,7 +163,6 @@ func HandleUpdateUser(id string, user dto.UpdateUserRequest) error {
 	if err != nil {
 		return err
 	}
-
 
 	return nil
 }

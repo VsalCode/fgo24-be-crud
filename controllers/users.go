@@ -146,7 +146,7 @@ func DetailUser(ctx *gin.Context) {
 		Message: "Get user detail successfully",
 		Result:  users,
 		PageInfo: map[string]any{
-			"totalData": len(users),
+			"totalData": 1,
 		},
 	})
 }
