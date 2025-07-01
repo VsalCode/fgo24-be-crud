@@ -6,7 +6,6 @@ import (
 	"crud-backend/models"
 	"crud-backend/utils"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -28,13 +27,18 @@ func ListAllUsers(ctx *gin.Context) {
 		noRedis = true
 	}
 
+	key := ctx.Query("search")
+	redisKey := "all-users"
+	if key != "" {
+		redisKey = "all-users:" + key
+	}
+
 	var users []models.User
 
 	if !noRedis {
-		result := utils.RedisClient.Exists(context.Background(), "all-users")
+		result := utils.RedisClient.Exists(context.Background(), redisKey)
 		if result.Val() != 0 {
-			users := []models.User{}
-			data := utils.RedisClient.Get(context.Background(), "all-users")
+			data := utils.RedisClient.Get(context.Background(), redisKey)
 			str := data.Val()
 			json.Unmarshal([]byte(str), &users)
 			ctx.JSON(http.StatusOK, utils.Response{
@@ -45,10 +49,12 @@ func ListAllUsers(ctx *gin.Context) {
 				},
 				Result: users,
 			})
+			return
 		}
 	}
 
-	users, err = models.FindAllUsers()
+	users, err = models.FindUserByName(key)
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
 			Success: false,
@@ -59,15 +65,9 @@ func ListAllUsers(ctx *gin.Context) {
 
 	if !noRedis {
 		encoded, err := json.Marshal(users)
-		if err != nil {
-			fmt.Println(err)
-			ctx.JSON(http.StatusInternalServerError, utils.Response{
-				Success: false,
-				Message: "Failed to Show List All Users!",
-			})
-			return
+		if err == nil {
+			utils.RedisClient.Set(context.Background(), redisKey, string(encoded), 0)
 		}
-		utils.RedisClient.Set(context.Background(), "all-users", string(encoded), 0)
 	}
 
 	ctx.JSON(http.StatusOK, utils.Response{

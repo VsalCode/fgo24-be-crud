@@ -17,16 +17,26 @@ type User struct {
 	Password string `form:"password" db:"password" json:"password"`
 }
 
-func FindAllUsers() ([]User, error) {
+func FindUserByName(search string) ([]User, error) {
 	conn, err := utils.DBConnect()
 	if err != nil {
 		return []User{}, err
 	}
 	defer conn.Close()
 
-	query := `SELECT id, username, email, phone, password FROM users`
-
-	rows, err := conn.Query(context.Background(), query)
+	var rows pgx.Rows
+	if search == "" {
+		rows, err = conn.Query(
+			context.Background(),
+			`SELECT id, username, email, phone, password FROM users`,
+		)
+	} else {
+		rows, err = conn.Query(
+    context.Background(),
+    `SELECT id, username, email, phone, password FROM users 
+     WHERE username ILIKE $1`,
+    "%"+search+"%")
+	}
 	if err != nil {
 		return []User{}, err
 	}
@@ -36,9 +46,9 @@ func FindAllUsers() ([]User, error) {
 	if err != nil {
 		return []User{}, err
 	}
-
 	return users, nil
 }
+
 
 func GetUserDetail(param string) ([]User, error) {
 	conn, err := utils.DBConnect()
