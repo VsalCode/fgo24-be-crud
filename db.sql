@@ -1,4 +1,3 @@
--- Active: 1750752675497@@127.0.0.1@5432@dbuserscrud
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(100) NOT NULL UNIQUE,
