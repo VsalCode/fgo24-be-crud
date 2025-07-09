@@ -1,18 +1,11 @@
-FROM golang:1.22-alpine AS build
-
+FROM golang:alpine AS build
 WORKDIR /buildapp
 COPY . .
+RUN go build -o becrud main.go
 
-RUN go mod download && \
-    CGO_ENABLED=0 GOOS=linux go build -o goapp main.go
-
-FROM alpine:3.20
+FROM alpine:3.22
 WORKDIR /app
-COPY --from=build /buildapp/goapp /app/goapp
-COPY .env /app/.env
-
-RUN chmod +x /app/goapp
+COPY --from=build /buildapp/becrud /app/becrud
 
 EXPOSE 8080
-
-ENTRYPOINT ["/app/goapp"]
+ENTRYPOINT ["/app/becrud"]

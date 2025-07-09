@@ -1,31 +1,32 @@
 services:
   app:
-    image: ghcr.io/VsalCode/be-crud:latest
+    build: .
     ports:
-      - "8080:8080"
-    environment:
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=app_user
-      - DB_PASSWORD=faisalg5
-      - DB_NAME=app_db
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      - 8080:8080
+    networks:
+      - netapp
     depends_on:
       - postgres
       - redis
+    environment:
+      DB_HOST: postgres
+      DB_PASSWORD: faisalg5
   postgres:
     image: postgres
     environment:
       POSTGRES_PASSWORD: faisalg5
-      POSTGRES_DB: app_db
-      POSTGRES_USER: app_user
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - data_postgres:/var/lib/postgresql/data
+    networks:
+      - netapp
   redis:
     image: redis
     volumes:
-      - redis_data:/data
+      - data_redis:/data
+    networks:
+      - netapp
 volumes:
-  postgres_data:
-  redis_data:
+  data_postgres:
+  data_redis:
+networks:
+  netapp:

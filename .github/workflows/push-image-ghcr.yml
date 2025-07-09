@@ -6,18 +6,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 
-
-      - name: Build Go application
-        run: go build -o be-crud main.go
-
-      - name: Create .env file from secret
-        run: echo "${{ secrets.ENV_FILE }}" > .env
-
-      - name: Log in to GHCR
-        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u VsalCode --password-stdin
-
-      - name: Build and push Docker image
-        run: |
-          docker build -t ghcr.io/VsalCode/be-crud:latest .
-          docker push ghcr.io/VsalCode/be-crud:latest
+        uses: actions/checkout@v4
+      - name: Build and publish a Docker image for ${{ github.repository }}
+        uses: macbre/push-to-ghcr@master
+        with:
+          image_name: ${{ github.repository }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
