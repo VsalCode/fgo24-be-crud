@@ -1,40 +1,69 @@
-name: push backend image to ghcr
-run-name: release image to ghcr
-on: [push]
+name: Push backend image to GHCR
+run-name: Release Image GHCR
+on:
+  push:
+    branches:
+      - main
 jobs:
-  push-image-to-ghcr:
+  push-image-toghcr:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 
+        uses: actions/checkout@v4
 
-      - name: Build and publish Docker image
-        uses: macbre/push-to-ghcr@master
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          image_name: vsalcode/fgo24-be-crud
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-  deploy-to-vps:
-  runs-on: ubuntu-latest
-  steps:
-    - name: Connect & Deploy to VPS
-      uses: appleboy/ssh-action@v0.1.12
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: ${{ secrets.SSH_PORT }}
-        script: |
-          echo "Checking current directory..."
-          pwd
-          ls -l  
-          echo "Pulling latest image from GHCR..."
-          echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u VsalCode --password-stdin
-          docker pull ghcr.io/vsalcode/fgo24-be-crud:latest
-          echo "Stopping existing container..."
-          docker compose down || true
-          echo "Navigating to the project directory..."
-          cd /path/to/project/directory || exit 1  
-          ls -l  
-          echo "Starting Docker Compose..."
-          docker compose up -d
+      - name: Build and push Docker image to GHCR
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/vsalcode/fgo24-be-crud:latest
+
+      - name: Generate .env file from secrets
+        run: |
+          cat <<EOF > .env
+          APP_PORT=${{ secrets.APP_PORT }}
+          APP_SECRET=${{ secrets.APP_SECRET }}
+          PGHOST=${{ secrets.PGHOST }}
+          PGPORT=${{ secrets.PGPORT }}
+          PGDATABASE=${{ secrets.PGDATABASE }}
+          PGUSER=${{ secrets.PGUSER }}
+          PGPASSWORD=${{ secrets.PGPASSWORD }}
+          RDADDRESS=${{ secrets.RDADDRESS }}
+          RDPASSWORD=${{ secrets.RDPASSWORD }}
+          RDDB=${{ secrets.RDDB }}
+          EOF
+
+      - name: Copy docker-compose and .env to VPS
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          port: 9301
+          key: ${{ secrets.VPS_PRIVATE_KEY }}
+          source: "docker-compose.yml,.env"
+          target: /home/faisal/deploy
+
+
+      - name: Deploy on VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          port: 9301
+          key: ${{ secrets.VPS_PRIVATE_KEY }}
+          script: |
+            cd /home/faisal/deploy
+            docker pull ghcr.io/vsalcode/fgo24-be-crud:latest
+            docker compose down || true
+            docker compose up -d
