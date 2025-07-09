@@ -29,39 +29,13 @@ jobs:
           push: true
           tags: ghcr.io/vsalcode/fgo24-be-crud:latest
 
-      - name: Generate .env file from secrets
-        run: |
-          cat <<EOF > .env
-          APP_PORT=${{ secrets.APP_PORT }}
-          APP_SECRET=${{ secrets.APP_SECRET }}
-          PGHOST=${{ secrets.PGHOST }}
-          PGPORT=${{ secrets.PGPORT }}
-          PGDATABASE=${{ secrets.PGDATABASE }}
-          PGUSER=${{ secrets.PGUSER }}
-          PGPASSWORD=${{ secrets.PGPASSWORD }}
-          RDADDRESS=${{ secrets.RDADDRESS }}
-          RDPASSWORD=${{ secrets.RDPASSWORD }}
-          RDDB=${{ secrets.RDDB }}
-          EOF
-
-      - name: Copy docker-compose and .env to VPS
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          port: 9301
-          key: ${{ secrets.VPS_PRIVATE_KEY }}
-          source: "docker-compose.yml,.env"
-          target: /home/faisal/deploy
-
-
       - name: Deploy on VPS
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          port: 9301
-          key: ${{ secrets.VPS_PRIVATE_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: 9401
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/faisal/deploy
             docker pull ghcr.io/vsalcode/fgo24-be-crud:latest
