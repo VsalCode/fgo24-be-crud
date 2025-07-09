@@ -3,25 +3,41 @@ services:
     image: ghcr.io/vsalcode/fgo24-be-crud:latest
     ports:
       - 8080:8080
+    environment:
+      - PGUSER=faisal
+      - PGPASSWORD=faisalg5
+      - PGHOST=postgres
+      - PGPORT=5432
+      - PGDATABASE=dbuserscrud
+      - REDIS_ADDR=redis:6379
+      - REDIS_PASSWORD=
     networks:
       - netapp
+    depends_on:
+      - postgres
+      - redis
+
   postgres:
     image: postgres
     environment:
-      POSTGRES_PASSWORD: faisalg5
+      - POSTGRES_PASSWORD=faisalg5
+      - POSTGRES_DB=dbuserscrud
     volumes:
       - data_postgres:/var/lib/postgresql/data
       - ./db.sql:/docker-entrypoint-initdb.d/db.sql
     networks:
       - netapp
+
   redis:
     image: redis
     volumes:
       - data_redis:/data
     networks:
       - netapp
+
 volumes:
   data_postgres:
   data_redis:
+
 networks:
   netapp:
