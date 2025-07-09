@@ -1,0 +1,10 @@
+name: Push Backend Image to GHCR
+run-name: Release Image GHCR
+on: [push]
+jobs:
+  push-image-to-ghcr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - run: go build -o backend-app main.go

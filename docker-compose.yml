@@ -7,9 +7,5 @@ services:
         image: postgres
         environment:
             - POSTGRES_PASSWORD=faisalg5
-        ports:
-            - 5433:5432
     redis:
         image: redis
-        ports:
-            - 6380:6379
