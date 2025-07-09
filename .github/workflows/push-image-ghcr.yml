@@ -7,4 +7,29 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - run: go build -o backend-app main.go
+
+      - name: Build Go application
+        run: go build -o backend-app main.go
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u VsalCode --password-stdin
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ghcr.io/VsalCode/backend-app:latest .
+          docker push ghcr.io/VsalCode/backend-app:latest
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/auth-server
+          chmod 600 ~/.ssh/auth-server
+          ssh-keyscan -p 9401 -H 146.190.102.54 >> ~/.ssh/known_hosts
+
+      - name: Pull image and run docker compose on remote server
+        run: |
+          ssh -i ~/.ssh/auth-server -p 9401 faisal@146.190.102.54 << 'EOF'
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u VsalCode --password-stdin
+            docker pull ghcr.io/VsalCode/backend-app:latest
+            docker compose -f /path/to/your/docker-compose.yml up -d
+          EOF

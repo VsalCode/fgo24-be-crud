@@ -1,11 +1,26 @@
 services:
-    app:
-        build: .
-        ports:
-            - 8080:8080
-    postgres:
-        image: postgres
-        environment:
-            - POSTGRES_PASSWORD=faisalg5
-    redis:
-        image: redis
+  app:
+    image: ghcr.io/VsalCode/backend-app:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: faisalg5
+      POSTGRES_DB: app_db
+      POSTGRES_USER: app_user
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  redis:
+    image: redis
+    volumes:
+      - redis_data:/data
+volumes:
+  postgres_data:
+  redis_data:
